@@ -1,0 +1,285 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// CORE MULTI-TENANT TABLES
+// ============================================
+
+model Plan {
+  id            String   @id @default(uuid())
+  name          String   @unique // 'basic', 'pro', 'enterprise'
+  displayName   String
+  price         Decimal  @db.Decimal(10, 2)
+  billingCycle  String   // 'monthly', 'yearly'
+  features      Json     // Store plan limits: {"maxProducts": 100, "maxUsers": 5}
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenants Tenant[]
+
+  @@map("plans")
+}
+
+model Tenant {
+  id              String    @id @default(uuid())
+  name            String
+  slug            String    @unique
+  businessType    String    // 'inventory', 'hotel', 'landing', 'expense'
+  planId          String
+  status          String    @default("trial") // 'trial', 'active', 'suspended', 'expired'
+  customLimits    Json?     // Override plan limits for specific tenants
+  trialStartDate  DateTime? // When trial started
+  trialEndDate    DateTime? // When trial ends (2 months from start)
+  trialConverted  Boolean   @default(false) // Did they convert to paid plan?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  plan            Plan             @relation(fields: [planId], references: [id])
+  users           User[]
+  tenantModules   TenantModule[]
+  products        Product[]
+  stockMovements  StockMovement[]
+  hotelTables     HotelTable[]
+  reservations    Reservation[]
+  expenses        Expense[]
+  landingPages    LandingPage[]
+  pageAssets      PageAsset[]
+  rolePermissions RolePermission[]
+
+  @@map("tenants")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  tenantId     String
+  email        String   @unique
+  passwordHash String
+  role         String   // 'owner', 'admin', 'staff'
+  firstName    String?
+  lastName     String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  products       Product[]
+  stockMovements StockMovement[]
+  expenses       Expense[]
+
+  @@map("users")
+}
+
+model Module {
+  id          String   @id @default(uuid())
+  name        String   @unique // 'inventory', 'hotel', 'expenses', 'landing'
+  displayName String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  tenantModules TenantModule[]
+  permissions   Permission[]
+
+  @@map("modules")
+}
+
+model TenantModule {
+  id        String   @id @default(uuid())
+  tenantId  String
+  moduleId  String
+  isEnabled Boolean  @default(true)
+  config    Json?    // Module-specific settings
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  module Module @relation(fields: [moduleId], references: [id])
+
+  @@unique([tenantId, moduleId])
+  @@map("tenant_modules")
+}
+
+model Permission {
+  id            String  @id @default(uuid())
+  name          String  @unique // 'inventory.create', 'hotel.view'
+  moduleId      String?
+  description   String?
+  minPlanLevel  String? // 'basic', 'pro', 'enterprise'
+
+  module          Module?           @relation(fields: [moduleId], references: [id])
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String @id @default(uuid())
+  tenantId     String
+  role         String // 'owner', 'admin', 'staff'
+  permissionId String
+
+  tenant     Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([tenantId, role, permissionId])
+  @@map("role_permissions")
+}
+
+// ============================================
+// INVENTORY MODULE TABLES
+// ============================================
+
+model Product {
+  id                String   @id @default(uuid())
+  tenantId          String
+  name              String
+  sku               String?
+  description       String?
+  price             Decimal? @db.Decimal(10, 2)
+  stockQuantity     Int      @default(0)
+  lowStockThreshold Int      @default(10)
+  category          String?
+  imageUrl          String?
+  createdBy         String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  creator        User?           @relation(fields: [createdBy], references: [id])
+  stockMovements StockMovement[]
+
+  @@index([tenantId])
+  @@map("products")
+}
+
+model StockMovement {
+  id           String   @id @default(uuid())
+  tenantId     String
+  productId    String
+  quantity     Int // Positive for addition, negative for deduction
+  movementType String // 'purchase', 'sale', 'adjustment', 'return'
+  notes        String?
+  createdBy    String?
+  createdAt    DateTime @default(now())
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  creator User?   @relation(fields: [createdBy], references: [id])
+
+  @@index([tenantId, productId])
+  @@map("stock_movements")
+}
+
+// ============================================
+// HOTEL MODULE TABLES
+// ============================================
+
+model HotelTable {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tableNumber String
+  capacity    Int?
+  status      String   @default("available") // 'available', 'occupied', 'reserved', 'maintenance'
+  floor       String?
+  section     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  reservations Reservation[]
+
+  @@unique([tenantId, tableNumber])
+  @@index([tenantId])
+  @@map("hotel_tables")
+}
+
+model Reservation {
+  id              String    @id @default(uuid())
+  tenantId        String
+  tableId         String
+  customerName    String
+  customerPhone   String?
+  customerEmail   String?
+  reservationTime DateTime
+  partySize       Int
+  status          String    @default("pending") // 'pending', 'confirmed', 'completed', 'cancelled', 'no-show'
+  specialRequests String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  tenant Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  table  HotelTable @relation(fields: [tableId], references: [id])
+
+  @@index([tenantId, reservationTime])
+  @@map("reservations")
+}
+
+// ============================================
+// EXPENSE MODULE TABLES
+// ============================================
+
+model Expense {
+  id          String   @id @default(uuid())
+  tenantId    String
+  category    String // 'rent', 'utilities', 'supplies', 'salaries', 'marketing', 'other'
+  amount      Decimal  @db.Decimal(10, 2)
+  description String?
+  date        DateTime @db.Date
+  receiptUrl  String?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant  Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  creator User?  @relation(fields: [createdBy], references: [id])
+
+  @@index([tenantId, date])
+  @@map("expenses")
+}
+
+// ============================================
+// LANDING PAGE MODULE TABLES
+// ============================================
+
+model LandingPage {
+  id          String   @id @default(uuid())
+  tenantId    String
+  title       String?
+  content     Json? // Store page structure as JSON (blocks/sections)
+  theme       String   @default("default")
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant     Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  pageAssets PageAsset[]
+
+  @@index([tenantId])
+  @@map("landing_pages")
+}
+
+model PageAsset {
+  id            String   @id @default(uuid())
+  tenantId      String
+  landingPageId String
+  assetType     String // 'image', 'video', 'document'
+  url           String
+  altText       String?
+  displayOrder  Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  landingPage LandingPage @relation(fields: [landingPageId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, landingPageId])
+  @@map("page_assets")
+}
