@@ -99,7 +99,7 @@ export class UserController {
 
       const { id } = req.params;
 
-      const user = await UserService.getUserById(id, req.tenantId);
+      const user = await UserService.getUserById(id as string, req.tenantId);
 
       res.status(200).json({
         success: true,
@@ -126,7 +126,7 @@ export class UserController {
       const { id } = req.params;
       const validatedData = updateUserSchema.parse(req.body);
 
-      const user = await UserService.updateUser(id, req.tenantId, validatedData);
+      const user = await UserService.updateUser(id as string, req.tenantId, validatedData);
 
       res.status(200).json({
         success: true,
@@ -153,7 +153,7 @@ export class UserController {
 
       const { id } = req.params;
 
-      const result = await UserService.deleteUser(id, req.tenantId);
+      const result = await UserService.deleteUser(id as string, req.tenantId);
 
       res.status(200).json({
         success: true,
@@ -190,7 +190,7 @@ export class UserController {
 
       const validatedData = changePasswordSchema.parse(req.body);
 
-      const result = await UserService.changePassword(id, validatedData);
+      const result = await UserService.changePassword(id as string, validatedData);
 
       res.status(200).json({
         success: true,

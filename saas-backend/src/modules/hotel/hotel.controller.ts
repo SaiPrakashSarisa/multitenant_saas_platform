@@ -79,7 +79,7 @@ export class HotelController {
       }
 
       const { id } = req.params;
-      const table = await HotelService.getTableById(id, req.tenantId);
+      const table = await HotelService.getTableById(id as string, req.tenantId);
 
       res.status(200).json({
         success: true,
@@ -98,7 +98,7 @@ export class HotelController {
 
       const { id } = req.params;
       const validatedData = updateTableSchema.parse(req.body);
-      const table = await HotelService.updateTable(id, req.tenantId, validatedData);
+      const table = await HotelService.updateTable(id as string, req.tenantId, validatedData);
 
       res.status(200).json({
         success: true,
@@ -117,7 +117,7 @@ export class HotelController {
       }
 
       const { id } = req.params;
-      const result = await HotelService.deleteTable(id, req.tenantId);
+      const result = await HotelService.deleteTable(id as string, req.tenantId);
 
       res.status(200).json({
         success: true,
@@ -183,7 +183,7 @@ export class HotelController {
       }
 
       const { id } = req.params;
-      const reservation = await HotelService.getReservationById(id, req.tenantId);
+      const reservation = await HotelService.getReservationById(id as string, req.tenantId);
 
       res.status(200).json({
         success: true,
@@ -202,7 +202,7 @@ export class HotelController {
 
       const { id } = req.params;
       const validatedData = updateReservationSchema.parse(req.body);
-      const reservation = await HotelService.updateReservation(id, req.tenantId, validatedData);
+      const reservation = await HotelService.updateReservation(id as string, req.tenantId, validatedData);
 
       res.status(200).json({
         success: true,
@@ -221,7 +221,7 @@ export class HotelController {
       }
 
       const { id } = req.params;
-      const result = await HotelService.cancelReservation(id, req.tenantId);
+      const result = await HotelService.cancelReservation(id as string, req.tenantId);
 
       res.status(200).json({
         success: true,

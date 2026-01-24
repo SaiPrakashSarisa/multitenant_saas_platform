@@ -92,7 +92,7 @@ export class InventoryController {
       }
 
       const { id } = req.params;
-      const product = await InventoryService.getProductById(id, req.tenantId);
+      const product = await InventoryService.getProductById(id as string, req.tenantId);
 
       res.status(200).json({
         success: true,
@@ -115,7 +115,7 @@ export class InventoryController {
 
       const { id } = req.params;
       const validatedData = updateProductSchema.parse(req.body);
-      const product = await InventoryService.updateProduct(id, req.tenantId, validatedData);
+      const product = await InventoryService.updateProduct(id as string, req.tenantId, validatedData);
 
       res.status(200).json({
         success: true,
@@ -138,7 +138,7 @@ export class InventoryController {
       }
 
       const { id } = req.params;
-      const result = await InventoryService.deleteProduct(id, req.tenantId);
+      const result = await InventoryService.deleteProduct(id as string, req.tenantId);
 
       res.status(200).json({
         success: true,
@@ -162,7 +162,7 @@ export class InventoryController {
       const { id } = req.params;
       const validatedData = adjustStockSchema.parse(req.body);
       const result = await InventoryService.adjustStock(
-        id,
+        id as string,
         req.tenantId,
         req.user.userId,
         validatedData

@@ -40,7 +40,7 @@ export class TenantController {
         });
       }
 
-      const tenant = await TenantService.getTenantById(id);
+      const tenant = await TenantService.getTenantById(id as string);
 
       res.status(200).json({
         success: true,
@@ -69,7 +69,7 @@ export class TenantController {
       }
 
       const validatedData = updateTenantSchema.parse(req.body);
-      const tenant = await TenantService.updateTenant(id, validatedData);
+      const tenant = await TenantService.updateTenant(id as string, validatedData);
 
       res.status(200).json({
         success: true,
@@ -107,7 +107,7 @@ export class TenantController {
         });
       }
 
-      const tenant = await TenantService.upgradePlan(id, { planId });
+      const tenant = await TenantService.upgradePlan(id as string, { planId });
 
       res.status(200).json({
         success: true,

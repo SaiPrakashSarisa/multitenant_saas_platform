@@ -7,9 +7,7 @@ export const registerSchema = z.object({
     .min(3, 'Slug must be at least 3 characters')
     .max(50, 'Slug must be at most 50 characters')
     .regex(/^[a-z0-9-]+$/, 'Slug can only contain lowercase letters, numbers, and hyphens'),
-  businessType: z.enum(['inventory', 'hotel', 'landing', 'expense'], {
-    errorMap: () => ({ message: 'Invalid business type' }),
-  }),
+  businessType: z.enum(['inventory', 'hotel', 'landing', 'expense']),
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   firstName: z.string().optional(),
@@ -36,5 +34,5 @@ export const updateTenantSchema = z.object({
   name: z.string().min(2).optional(),
   status: z.enum(['trial', 'active', 'suspended', 'expired']).optional(),
   planId: z.string().uuid().optional(),
-  customLimits: z.record(z.any()).optional(),
+  customLimits: z.record(z.string(), z.any()).optional(),
 });

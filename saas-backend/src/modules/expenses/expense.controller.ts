@@ -66,7 +66,7 @@ export class ExpenseController {
       }
 
       const { id } = req.params;
-      const expense = await ExpenseService.getExpenseById(id, req.tenantId);
+      const expense = await ExpenseService.getExpenseById(id as string, req.tenantId);
 
       res.status(200).json({
         success: true,
@@ -85,7 +85,7 @@ export class ExpenseController {
 
       const { id } = req.params;
       const validatedData = updateExpenseSchema.parse(req.body);
-      const expense = await ExpenseService.updateExpense(id, req.tenantId, validatedData);
+      const expense = await ExpenseService.updateExpense(id as string, req.tenantId, validatedData);
 
       res.status(200).json({
         success: true,
@@ -104,7 +104,7 @@ export class ExpenseController {
       }
 
       const { id } = req.params;
-      const result = await ExpenseService.deleteExpense(id, req.tenantId);
+      const result = await ExpenseService.deleteExpense(id as string, req.tenantId);
 
       res.status(200).json({
         success: true,
