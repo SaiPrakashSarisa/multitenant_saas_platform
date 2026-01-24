@@ -15,6 +15,7 @@ import adminAuthRoutes from './modules/admin/auth/admin.auth.routes';
 import adminTenantRoutes from './modules/admin/tenants/admin.tenant.routes';
 import adminAnalyticsRoutes from './modules/admin/analytics/admin.analytics.routes';
 import adminSystemRoutes from './modules/admin/system/admin.system.routes';
+import adminPlanRoutes from './modules/admin/plans/admin.plans.routes';
 
 // Load environment variables
 dotenv.config();
@@ -83,6 +84,7 @@ app.use('/api/admin/auth', adminAuthRoutes);
 app.use('/api/admin/tenants', adminTenantRoutes);
 app.use('/api/admin/analytics', adminAnalyticsRoutes);
 app.use('/api/admin/system', adminSystemRoutes);
+app.use('/api/admin/plans', adminPlanRoutes);
 
 // 404 Handler
 app.use((req: Request, res: Response) => {
