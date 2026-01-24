@@ -1,114 +1,206 @@
-# Multi-Tenant SaaS Platform - Backend
+# SaaS Platform - Complete API Reference
 
-A modular multi-tenant SaaS backend supporting diverse business types (Inventory, Hotel, Landing Page, Expenses).
+A comprehensive multi-tenant SaaS backend with Inventory, Hotel, and Expense management modules.
 
-## 🚀 Tech Stack
-
-- **Runtime**: Node.js v20+
-- **Framework**: Express.js
-- **Database**: PostgreSQL with Prisma ORM
-- **Language**: TypeScript
-- **Auth**: JWT + bcrypt
-
-## 📋 Prerequisites
-
-- Node.js v20 or higher
-- PostgreSQL database
-- npm or yarn
-
-## ⚙️ Setup Instructions
-
-### 1. Install Dependencies
+## 🚀 Quick Start
 
 ```bash
+# Install dependencies
 npm install
-```
 
-### 2. Configure Environment
-
-Update `.env` file with your database credentials:
-
-```env
-DATABASE_URL="postgresql://username:password@localhost:5432/saas_platform?schema=public"
-JWT_SECRET="your-super-secret-jwt-key"
-PORT=5000
-```
-
-### 3. Initialize Database
-
-```bash
-# Generate Prisma Client
+# Setup database
 npm run prisma:generate
-
-# Run migrations
 npm run prisma:migrate
-
-# Seed initial data (plans, modules, permissions)
 npx prisma db seed
-```
 
-### 4. Start Development Server
-
-```bash
+# Start server
 npm run dev
 ```
 
-Server will run on `http://localhost:5000`
+Server runs on: `http://localhost:5000`
 
-## 📚 Available Scripts
+## 📦 What's Included
 
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm run prisma:generate` - Generate Prisma Client
-- `npm run prisma:migrate` - Run database migrations
-- `npm run prisma:studio` - Open Prisma Studio (database GUI)
+### Core Features
+- ✅ **Multi-tenant Architecture** - Complete tenant isolation
+- ✅ **2-Month Free Trial** - Auto-assigned on registration
+- ✅ **JWT Authentication** - Secure token-based auth
+- ✅ **Role-Based Access** - Owner, Admin, Staff roles
+- ✅ **Plan Limits** - Automatic enforcement (products, users, tables)
 
-## 🏗️ Project Structure
+### Business Modules
+1. **Inventory Management**
+   - Product CRUD with SKU tracking
+   - Stock adjustments (purchase/sale/adjustment/return)
+   - Low-stock alerts
+   - Inventory analytics
+
+2. **Hotel & Table Management**
+   - Table management with status tracking
+   - Reservation system with conflict detection
+   - Occupancy tracking
+   - Hotel statistics
+
+3. **Expense Tracking**
+   - Expense CRUD with categorization
+   - Date range filtering
+   - Monthly analytics & trends
+   - Category breakdowns
+
+## 📡 API Endpoints
+
+### Authentication
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Create tenant + owner (auto trial) |
+| POST | `/api/auth/login` | Login user |
+| GET | `/api/auth/me` | Get current user + permissions |
+
+### Tenants
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/tenants` | List all tenants (owner only) |
+| GET | `/api/tenants/:id` | Get tenant details |
+| PUT | `/api/tenants/:id` | Update tenant |
+| PUT | `/api/tenants/:id/upgrade` | Upgrade plan |
+
+### Users
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/users` | Create user (owner/admin) |
+| GET | `/api/users` | List tenant users |
+| GET | `/api/users/:id` | Get user details |
+| PUT | `/api/users/:id` | Update user |
+| DELETE | `/api/users/:id` | Deactivate user |
+| PUT | `/api/users/:id/change-password` | Change password |
+
+### Inventory Module
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/inventory/products` | Create product |
+| GET | `/api/inventory/products` | List products (filters: category, lowStock, search) |
+| GET | `/api/inventory/products/:id` | Get product with history |
+| PUT | `/api/inventory/products/:id` | Update product |
+| DELETE | `/api/inventory/products/:id` | Delete product |
+| POST | `/api/inventory/products/:id/stock` | Adjust stock |
+| GET | `/api/inventory/low-stock` | Get low-stock products |
+| GET | `/api/inventory/stats` | Get inventory statistics |
+| GET | `/api/inventory/stock-history` | Get stock movements |
+
+### Hotel Module
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/hotel/tables` | Create table |
+| GET | `/api/hotel/tables` | List tables (filters: status, floor, section) |
+| GET | `/api/hotel/tables/:id` | Get table details |
+| PUT | `/api/hotel/tables/:id` | Update table |
+| DELETE | `/api/hotel/tables/:id` | Delete table |
+| POST | `/api/hotel/reservations` | Create reservation |
+| GET | `/api/hotel/reservations` | List reservations (filters: status, date, tableId) |
+| GET | `/api/hotel/reservations/:id` | Get reservation details |
+| PUT | `/api/hotel/reservations/:id` | Update reservation |
+| DELETE | `/api/hotel/reservations/:id` | Cancel reservation |
+| GET | `/api/hotel/stats` | Get hotel statistics |
+
+### Expense Module
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/expenses` | Create expense |
+| GET | `/api/expenses` | List expenses (filters: category, date range) |
+| GET | `/api/expenses/:id` | Get expense details |
+| PUT | `/api/expenses/:id` | Update expense |
+| DELETE | `/api/expenses/:id` | Delete expense |
+| GET | `/api/expenses/summary` | Get expense summary & analytics |
+| GET | `/api/expenses/categories` | Get all categories |
+
+## 🔒 Authentication
+
+All endpoints (except `/api/auth/register` and `/api/auth/login`) require:
 
 ```
-src/
-├── config/          # Database and app configuration
-├── middleware/      # Auth, tenant context, error handlers
-├── modules/
-│   ├── auth/        # Authentication APIs
-│   ├── tenants/     # Tenant management
-│   ├── users/       # User management
-│   ├── inventory/   # Inventory module
-│   ├── hotel/       # Hotel module
-│   ├── expenses/    # Expense tracking
-│   └── landing/     # Landing page builder
-├── utils/           # Helper functions
-└── app.ts           # Main application entry
+Authorization: Bearer {your_jwt_token}
 ```
 
-## 🗄️ Database Schema
+## 📊 Plan Limits
 
-### Core Tables
-- **tenants** - Client businesses
-- **users** - User accounts
-- **plans** - Subscription plans (Basic, Pro, Enterprise)
-- **modules** - Available features (Inventory, Hotel, etc.)
-- **tenant_modules** - Module assignments per tenant
-- **permissions** - Fine-grained access control
+| Plan | Price | Products | Users | Tables |
+|------|-------|----------|-------|--------|
+| **Free Trial** | FREE (2 months) | 50 | 2 | 5 |
+| **Basic** | $9.99/mo | 100 | 2 | 10 |
+| **Pro** | $29.99/mo | 1000 | 10 | 50 |
+| **Enterprise** | $99.99/mo | Unlimited | Unlimited | Unlimited |
 
-### Module Tables
-- **products**, **stock_movements** - Inventory
-- **hotel_tables**, **reservations** - Hotel
-- **expenses** - Expense tracking
-- **landing_pages**, **page_assets** - Landing page builder
+Limits are automatically enforced. Upgrade via `/api/tenants/:id/upgrade`.
 
-## 🔑 API Endpoints (Coming Next)
+## 🧪 Testing
 
-- `/api/auth/*` - Authentication
-- `/api/tenants/*` - Tenant management
-- `/api/inventory/*` - Inventory module
-- `/api/hotel/*` - Hotel module
-- `/api/expenses/*` - Expense tracking
-- `/api/landing-page/*` - Landing pages
+### Postman Collection
+Import: `postman/saas-platform-complete.postman_collection.json`
 
-## 📝 Next Steps
+### Environment Variables
+- `base_url`: http://localhost:5000
+- `auth_token`: (filled automatically)
+- `tenant_id`: (filled automatically)
 
-Phase 1 Complete ✅ - Database schema created
+### Test Workflow
+1. **Register** → Creates tenant with 2-month trial
+2. **Login** → Get auth token
+3. **Create Products** → Test inventory module
+4. **Create Tables** → Test hotel module
+5. **Add Expenses** → Test expense module
+6. **Check Limits** → Try exceeding plan limits
 
-**Phase 2**: Build core APIs (Auth, Tenants, Users)
+## 🏗️ Architecture
+
+```
+├── prisma/
+│   ├── schema.prisma      # Database schema (13 models)
+│   └── seed.ts            # Seed data (plans, modules, permissions)
+├── src/
+│   ├── config/
+│   │   └── database.ts    # Prisma client
+│   ├── middleware/
+│   │   ├── auth.ts        # JWT authentication
+│   │   └── errorHandler.ts
+│   ├── modules/
+│   │   ├── auth/          # Authentication
+│   │   ├── tenants/       # Tenant management
+│   │   ├── users/         # User management
+│   │   ├── inventory/     # Inventory module
+│   │   ├── hotel/         # Hotel module
+│   │   └── expenses/      # Expense module
+│   ├── utils/
+│   │   ├── jwt.ts         # JWT utilities
+│   │   └── validators.ts  # Zod schemas
+│   └── app.ts             # Express app
+└── postman/               # API collections
+```
+
+## 🛠️ Tech Stack
+
+- **Backend**: Node.js, Express.js, TypeScript
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: JWT + bcrypt
+- **Validation**: Zod
+- **Testing**: Postman
+
+## 📝 Documentation
+
+- **API_DOCUMENTATION.md** - Complete API reference with examples
+- **API_TESTING.md** - Detailed testing guide (legacy)
+- **README.md** - This file
+
+## 🎯 Next Steps
+
+1. **Frontend Development** - Build Next.js admin panel and client app
+2. **Landing Page Module** - Simple CMS for public pages
+3. **Plan & Permission APIs** - Advanced permission management
+4. **Billing Integration** - Stripe integration for subscriptions
+5. **Email Notifications** - Trial expiry reminders
+6. **Analytics Dashboard** - Business insights
+
+## 📞 Support
+
+For issues or questions, check the API documentation or test with Postman collections.
+
+**Happy Building!** 🚀

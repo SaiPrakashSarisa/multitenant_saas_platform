@@ -8,6 +8,9 @@ import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './modules/auth/auth.routes';
 import tenantRoutes from './modules/tenants/tenant.routes';
 import userRoutes from './modules/users/user.routes';
+import inventoryRoutes from './modules/inventory/inventory.routes';
+import hotelRoutes from './modules/hotel/hotel.routes';
+import expenseRoutes from './modules/expenses/expense.routes';
 
 // Load environment variables
 dotenv.config();
@@ -50,6 +53,9 @@ app.get('/api', (req: Request, res: Response) => {
       auth: '/api/auth',
       tenants: '/api/tenants',
       users: '/api/users',
+      inventory: '/api/inventory',
+      hotel: '/api/hotel',
+      expenses: '/api/expenses',
       health: '/health',
     },
   });
@@ -59,6 +65,9 @@ app.get('/api', (req: Request, res: Response) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/tenants', tenantRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/hotel', hotelRoutes);
+app.use('/api/expenses', expenseRoutes);
 
 // 404 Handler
 app.use((req: Request, res: Response) => {
