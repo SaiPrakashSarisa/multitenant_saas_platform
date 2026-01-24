@@ -11,6 +11,10 @@ import userRoutes from './modules/users/user.routes';
 import inventoryRoutes from './modules/inventory/inventory.routes';
 import hotelRoutes from './modules/hotel/hotel.routes';
 import expenseRoutes from './modules/expenses/expense.routes';
+import adminAuthRoutes from './modules/admin/auth/admin.auth.routes';
+import adminTenantRoutes from './modules/admin/tenants/admin.tenant.routes';
+import adminAnalyticsRoutes from './modules/admin/analytics/admin.analytics.routes';
+import adminSystemRoutes from './modules/admin/system/admin.system.routes';
 
 // Load environment variables
 dotenv.config();
@@ -56,6 +60,7 @@ app.get('/api', (req: Request, res: Response) => {
       inventory: '/api/inventory',
       hotel: '/api/hotel',
       expenses: '/api/expenses',
+      adminAuth: '/api/admin/auth',
       health: '/health',
     },
   });
@@ -68,6 +73,10 @@ app.use('/api/users', userRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/hotel', hotelRoutes);
 app.use('/api/expenses', expenseRoutes);
+app.use('/api/admin/auth', adminAuthRoutes);
+app.use('/api/admin/tenants', adminTenantRoutes);
+app.use('/api/admin/analytics', adminAnalyticsRoutes);
+app.use('/api/admin/system', adminSystemRoutes);
 
 // 404 Handler
 app.use((req: Request, res: Response) => {

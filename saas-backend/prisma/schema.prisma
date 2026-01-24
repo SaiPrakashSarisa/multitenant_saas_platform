@@ -285,3 +285,39 @@ model PageAsset {
   @@index([tenantId, landingPageId])
   @@map("page_assets")
 }
+
+// ============================================
+// PLATFORM ADMIN MODULE TABLES
+// ============================================
+
+model PlatformAdmin {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         String   @default("admin") // 'superadmin', 'admin', 'support'
+  firstName    String?
+  lastName     String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  auditLogs AdminAuditLog[]
+
+  @@map("platform_admins")
+}
+
+model AdminAuditLog {
+  id         String   @id @default(uuid())
+  adminId    String
+  action     String   // 'suspend_tenant', 'login', 'create_plan'
+  targetType String   // 'tenant', 'user', 'plan'
+  targetId   String?
+  details    Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  admin PlatformAdmin @relation(fields: [adminId], references: [id])
+
+  @@index([adminId])
+  @@map("admin_audit_logs")
+}

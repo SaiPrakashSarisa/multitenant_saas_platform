@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -160,6 +161,29 @@ async function main() {
   }
 
   console.log(`✅ Created ${permissions.length} permissions`);
+
+  // Create Super Admin
+  console.log('Creating super admin...');
+  const adminEmail = 'admin@platform.com';
+  const existingAdmin = await prisma.platformAdmin.findUnique({
+    where: { email: adminEmail },
+  });
+
+  if (!existingAdmin) {
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    await prisma.platformAdmin.create({
+      data: {
+        email: adminEmail,
+        passwordHash: hashedPassword,
+        role: 'superadmin',
+        firstName: 'Super',
+        lastName: 'Admin',
+      },
+    });
+    console.log(`✅ Created super admin: ${adminEmail}`);
+  } else {
+    console.log(`ℹ️ Super admin already exists`);
+  }
 
   console.log('✅ Seed completed successfully!');
 }
