@@ -17,6 +17,13 @@ import adminAnalyticsRoutes from './modules/admin/analytics/admin.analytics.rout
 import adminSystemRoutes from './modules/admin/system/admin.system.routes';
 import adminPlanRoutes from './modules/admin/plans/admin.plans.routes';
 
+// E-commerce Routes
+import ecommerceCategoryRoutes from './modules/ecommerce/categories/category.routes';
+import ecommerceProductRoutes from './modules/ecommerce/products/product.routes';
+import ecommerceCartRoutes from './modules/ecommerce/cart/cart.routes';
+import ecommerceOrderRoutes from './modules/ecommerce/orders/order.routes';
+import ecommerceCouponRoutes from './modules/ecommerce/coupons/coupon.routes';
+
 // Load environment variables
 dotenv.config();
 
@@ -67,6 +74,13 @@ app.get('/api', (req: Request, res: Response) => {
       inventory: '/api/inventory',
       hotel: '/api/hotel',
       expenses: '/api/expenses',
+      ecommerce: {
+        categories: '/api/ecommerce/categories',
+        products: '/api/ecommerce/products',
+        cart: '/api/ecommerce/cart',
+        orders: '/api/ecommerce/orders',
+        coupons: '/api/ecommerce/coupons',
+      },
       adminAuth: '/api/admin/auth',
       health: '/health',
     },
@@ -85,6 +99,13 @@ app.use('/api/admin/tenants', adminTenantRoutes);
 app.use('/api/admin/analytics', adminAnalyticsRoutes);
 app.use('/api/admin/system', adminSystemRoutes);
 app.use('/api/admin/plans', adminPlanRoutes);
+
+// E-commerce routes
+app.use('/api/ecommerce/categories', ecommerceCategoryRoutes);
+app.use('/api/ecommerce/products', ecommerceProductRoutes);
+app.use('/api/ecommerce/cart', ecommerceCartRoutes);
+app.use('/api/ecommerce/orders', ecommerceOrderRoutes);
+app.use('/api/ecommerce/coupons', ecommerceCouponRoutes);
 
 // 404 Handler
 app.use((req: Request, res: Response) => {

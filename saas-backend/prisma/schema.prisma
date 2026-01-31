@@ -56,6 +56,13 @@ model Tenant {
   landingPages    LandingPage[]
   pageAssets      PageAsset[]
   rolePermissions RolePermission[]
+  
+  // E-commerce relations
+  ecommerceCategories EcommerceCategory[]
+  ecommerceProducts   EcommerceProduct[]
+  ecommerceCarts      EcommerceCart[]
+  ecommerceOrders     EcommerceOrder[]
+  ecommerceCoupons    EcommerceCoupon[]
 
   @@map("tenants")
 }
@@ -76,6 +83,10 @@ model User {
   products       Product[]
   stockMovements StockMovement[]
   expenses       Expense[]
+  
+  // E-commerce relations
+  ecommerceCarts  EcommerceCart[]
+  ecommerceOrders EcommerceOrder[]
 
   @@map("users")
 }
@@ -321,3 +332,247 @@ model AdminAuditLog {
   @@index([adminId])
   @@map("admin_audit_logs")
 }
+
+// ============================================
+// E-COMMERCE MODULE TABLES
+// ============================================
+
+model EcommerceCategory {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  slug        String
+  description String?
+  parentId    String?
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant   Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  parent   EcommerceCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children EcommerceCategory[] @relation("CategoryHierarchy")
+  products EcommerceProduct[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+  @@map("ecommerce_categories")
+}
+
+model EcommerceProduct {
+  id                String   @id @default(uuid())
+  tenantId          String
+  categoryId        String?
+  name              String
+  slug              String
+  description       String?
+  shortDescription  String?
+  sku               String?
+  price             Decimal  @db.Decimal(10, 2)
+  compareAtPrice    Decimal? @db.Decimal(10, 2) // Original price for discounts
+  costPrice         Decimal? @db.Decimal(10, 2) // Cost for profit calculation
+  stockQuantity     Int      @default(0)
+  lowStockThreshold Int      @default(10)
+  weight            Decimal? @db.Decimal(8, 2) // For shipping
+  isActive          Boolean  @default(true)
+  isFeatured        Boolean  @default(false)
+  metaTitle         String?
+  metaDescription   String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tenant    Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  category  EcommerceCategory?         @relation(fields: [categoryId], references: [id])
+  images    EcommerceProductImage[]
+  variants  EcommerceProductVariant[]
+  cartItems EcommerceCartItem[]
+  orderItems EcommerceOrderItem[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+  @@index([tenantId, categoryId])
+  @@map("ecommerce_products")
+}
+
+model EcommerceProductImage {
+  id        String   @id @default(uuid())
+  productId String
+  url       String
+  altText   String?
+  sortOrder Int      @default(0)
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  product EcommerceProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("ecommerce_product_images")
+}
+
+model EcommerceProductVariant {
+  id            String   @id @default(uuid())
+  productId     String
+  name          String   // e.g., "Small / Red"
+  sku           String?
+  price         Decimal? @db.Decimal(10, 2)
+  stockQuantity Int      @default(0)
+  attributes    Json?    // {"size": "S", "color": "Red"}
+  createdAt     DateTime @default(now())
+
+  product    EcommerceProduct    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems  EcommerceCartItem[]
+  orderItems EcommerceOrderItem[]
+
+  @@index([productId])
+  @@map("ecommerce_product_variants")
+}
+
+model EcommerceCart {
+  id         String    @id @default(uuid())
+  tenantId   String
+  customerId String?
+  sessionId  String?   // For guest checkout
+  status     String    @default("active") // 'active', 'converted', 'abandoned'
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  tenant   Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer User?               @relation(fields: [customerId], references: [id])
+  items    EcommerceCartItem[]
+
+  @@index([tenantId])
+  @@index([sessionId])
+  @@map("ecommerce_carts")
+}
+
+model EcommerceCartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  productId String
+  variantId String?
+  quantity  Int      @default(1)
+  unitPrice Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+
+  cart    EcommerceCart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product EcommerceProduct         @relation(fields: [productId], references: [id])
+  variant EcommerceProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@index([cartId])
+  @@map("ecommerce_cart_items")
+}
+
+model EcommerceOrder {
+  id                    String    @id @default(uuid())
+  tenantId              String
+  customerId            String?
+  orderNumber           String
+  status                String    @default("pending") // 'pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'
+  subtotal              Decimal   @db.Decimal(10, 2)
+  taxAmount             Decimal   @default(0) @db.Decimal(10, 2)
+  shippingAmount        Decimal   @default(0) @db.Decimal(10, 2)
+  discountAmount        Decimal   @default(0) @db.Decimal(10, 2)
+  total                 Decimal   @db.Decimal(10, 2)
+  currency              String    @default("USD")
+  
+  // Shipping Address
+  shippingName          String?
+  shippingAddressLine1  String?
+  shippingAddressLine2  String?
+  shippingCity          String?
+  shippingState         String?
+  shippingPostalCode    String?
+  shippingCountry       String?
+  shippingPhone         String?
+  
+  // Billing Address
+  billingName           String?
+  billingAddressLine1   String?
+  billingAddressLine2   String?
+  billingCity           String?
+  billingState          String?
+  billingPostalCode     String?
+  billingCountry        String?
+  
+  notes                 String?
+  couponId              String?
+  shippedAt             DateTime?
+  deliveredAt           DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  tenant   Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer User?                @relation(fields: [customerId], references: [id])
+  coupon   EcommerceCoupon?     @relation(fields: [couponId], references: [id])
+  items    EcommerceOrderItem[]
+  payments EcommercePayment[]
+
+  @@unique([tenantId, orderNumber])
+  @@index([tenantId])
+  @@index([customerId])
+  @@map("ecommerce_orders")
+}
+
+model EcommerceOrderItem {
+  id          String   @id @default(uuid())
+  orderId     String
+  productId   String?
+  variantId   String?
+  productName String   // Snapshot of product name
+  variantName String?
+  sku         String?
+  quantity    Int
+  unitPrice   Decimal  @db.Decimal(10, 2)
+  totalPrice  Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+
+  order   EcommerceOrder           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product EcommerceProduct?        @relation(fields: [productId], references: [id])
+  variant EcommerceProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@map("ecommerce_order_items")
+}
+
+model EcommerceCoupon {
+  id             String    @id @default(uuid())
+  tenantId       String
+  code           String
+  description    String?
+  discountType   String    // 'percentage', 'fixed_amount'
+  discountValue  Decimal   @db.Decimal(10, 2)
+  minOrderAmount Decimal?  @db.Decimal(10, 2)
+  maxUses        Int?
+  usesCount      Int       @default(0)
+  isActive       Boolean   @default(true)
+  startsAt       DateTime?
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  tenant Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  orders EcommerceOrder[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("ecommerce_coupons")
+}
+
+model EcommercePayment {
+  id              String   @id @default(uuid())
+  orderId         String
+  amount          Decimal  @db.Decimal(10, 2)
+  currency        String   @default("USD")
+  status          String   // 'pending', 'completed', 'failed', 'refunded'
+  paymentMethod   String?  // 'stripe', 'paypal', 'cod'
+  transactionId   String?
+  gatewayResponse Json?
+  createdAt       DateTime @default(now())
+
+  order EcommerceOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("ecommerce_payments")
+}
+

@@ -1,0 +1,1179 @@
+{
+	"info": {
+		"_postman_id": "ecommerce-module-collection",
+		"name": "SaaS Platform - E-commerce Module",
+		"description": "Complete E-commerce module API endpoints for the multi-tenant SaaS platform",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000/api"
+		},
+		{
+			"key": "token",
+			"value": ""
+		}
+	],
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register (Get Token)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.token) {",
+									"    pm.collectionVariables.set('token', jsonData.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"tenantName\": \"My E-commerce Store\",\n    \"slug\": \"my-ecommerce-store\",\n    \"businessType\": \"inventory\",\n    \"email\": \"owner@mystore.com\",\n    \"password\": \"Password123!\",\n    \"firstName\": \"Store\",\n    \"lastName\": \"Owner\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.token) {",
+									"    pm.collectionVariables.set('token', jsonData.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"owner@mystore.com\",\n    \"password\": \"Password123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Categories",
+			"item": [
+				{
+					"name": "Get All Categories",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/categories",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "categories"]
+						}
+					}
+				},
+				{
+					"name": "Get Category Tree",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/categories/tree",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "categories", "tree"]
+						}
+					}
+				},
+				{
+					"name": "Get Category by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/categories/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "categories", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "category-uuid-here"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Category by Slug",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/categories/slug/:slug",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "categories", "slug", ":slug"],
+							"variable": [
+								{
+									"key": "slug",
+									"value": "electronics"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Category",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Electronics\",\n    \"slug\": \"electronics\",\n    \"description\": \"Electronic devices and gadgets\",\n    \"isActive\": true,\n    \"sortOrder\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/categories",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "categories"]
+						}
+					}
+				},
+				{
+					"name": "Create Subcategory",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Smartphones\",\n    \"slug\": \"smartphones\",\n    \"description\": \"Mobile phones and accessories\",\n    \"parentId\": \"parent-category-uuid\",\n    \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/categories",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "categories"]
+						}
+					}
+				},
+				{
+					"name": "Update Category",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Electronics & Gadgets\",\n    \"description\": \"Updated description\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/categories/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "categories", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "category-uuid-here"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Category",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/categories/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "categories", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "category-uuid-here"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Reorder Categories",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"categories\": [\n        { \"id\": \"category-1-uuid\", \"sortOrder\": 1 },\n        { \"id\": \"category-2-uuid\", \"sortOrder\": 2 }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/categories/reorder",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "categories", "reorder"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Get All Products",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/products?page=1&limit=20",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "products"],
+							"query": [
+								{ "key": "page", "value": "1" },
+								{ "key": "limit", "value": "20" },
+								{ "key": "categoryId", "value": "", "disabled": true },
+								{ "key": "isActive", "value": "true", "disabled": true },
+								{ "key": "isFeatured", "value": "true", "disabled": true },
+								{ "key": "minPrice", "value": "10", "disabled": true },
+								{ "key": "maxPrice", "value": "1000", "disabled": true },
+								{ "key": "inStock", "value": "true", "disabled": true },
+								{ "key": "search", "value": "", "disabled": true }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Featured Products",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/products/featured?limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "products", "featured"],
+							"query": [
+								{ "key": "limit", "value": "10" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Low Stock Products",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/products/low-stock",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "products", "low-stock"]
+						}
+					}
+				},
+				{
+					"name": "Get Product by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/products/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "products", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "product-uuid-here"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Product by Slug",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/products/slug/:slug",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "products", "slug", ":slug"],
+							"variable": [
+								{
+									"key": "slug",
+									"value": "smartphone-x"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Smartphone X Pro\",\n    \"slug\": \"smartphone-x-pro\",\n    \"description\": \"Latest flagship smartphone with advanced features\",\n    \"shortDescription\": \"Premium smartphone\",\n    \"sku\": \"PHONE-X-PRO-001\",\n    \"price\": 1299.99,\n    \"compareAtPrice\": 1499.99,\n    \"costPrice\": 800.00,\n    \"stockQuantity\": 100,\n    \"lowStockThreshold\": 10,\n    \"weight\": 0.18,\n    \"isActive\": true,\n    \"isFeatured\": true,\n    \"categoryId\": \"category-uuid-here\",\n    \"metaTitle\": \"Buy Smartphone X Pro | Best Deals\",\n    \"metaDescription\": \"Shop the latest Smartphone X Pro with free shipping\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/products",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "products"]
+						}
+					}
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"price\": 1199.99,\n    \"stockQuantity\": 150,\n    \"isFeatured\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/products/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "products", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "product-uuid-here"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Stock",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"quantity\": 200\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/products/:id/stock",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "products", ":id", "stock"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "product-uuid-here"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/products/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "products", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "product-uuid-here"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Add Product Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"url\": \"https://example.com/images/product.jpg\",\n    \"altText\": \"Smartphone X Pro - Front View\",\n    \"isPrimary\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/products/:id/images",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "products", ":id", "images"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "product-uuid-here"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Remove Product Image",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/products/:id/images/:imageId",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "products", ":id", "images", ":imageId"],
+							"variable": [
+								{ "key": "id", "value": "product-uuid" },
+								{ "key": "imageId", "value": "image-uuid" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Set Primary Image",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/products/:id/images/:imageId/primary",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "products", ":id", "images", ":imageId", "primary"],
+							"variable": [
+								{ "key": "id", "value": "product-uuid" },
+								{ "key": "imageId", "value": "image-uuid" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Add Product Variant",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"128GB Black\",\n    \"sku\": \"PHONE-X-PRO-128-BLK\",\n    \"price\": 1299.99,\n    \"stockQuantity\": 50,\n    \"attributes\": {\n        \"storage\": \"128GB\",\n        \"color\": \"Black\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/products/:id/variants",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "products", ":id", "variants"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "product-uuid-here"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Variant",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"price\": 1199.99,\n    \"stockQuantity\": 75\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/products/:id/variants/:variantId",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "products", ":id", "variants", ":variantId"],
+							"variable": [
+								{ "key": "id", "value": "product-uuid" },
+								{ "key": "variantId", "value": "variant-uuid" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Variant",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/products/:id/variants/:variantId",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "products", ":id", "variants", ":variantId"],
+							"variable": [
+								{ "key": "id", "value": "product-uuid" },
+								{ "key": "variantId", "value": "variant-uuid" }
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Cart",
+			"item": [
+				{
+					"name": "Get Cart",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/cart",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "cart"]
+						}
+					}
+				},
+				{
+					"name": "Add Item to Cart",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"productId\": \"product-uuid-here\",\n    \"quantity\": 2,\n    \"variantId\": \"optional-variant-uuid\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/cart/items",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "cart", "items"]
+						}
+					}
+				},
+				{
+					"name": "Update Cart Item Quantity",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"quantity\": 3\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/cart/items/:itemId",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "cart", "items", ":itemId"],
+							"variable": [
+								{
+									"key": "itemId",
+									"value": "cart-item-uuid"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Remove Item from Cart",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/cart/items/:itemId",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "cart", "items", ":itemId"],
+							"variable": [
+								{
+									"key": "itemId",
+									"value": "cart-item-uuid"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Clear Cart",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/cart",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "cart"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Orders",
+			"item": [
+				{
+					"name": "Get All Orders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/orders?page=1&limit=20",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "orders"],
+							"query": [
+								{ "key": "page", "value": "1" },
+								{ "key": "limit", "value": "20" },
+								{ "key": "status", "value": "pending", "disabled": true },
+								{ "key": "startDate", "value": "2026-01-01", "disabled": true },
+								{ "key": "endDate", "value": "2026-12-31", "disabled": true },
+								{ "key": "search", "value": "", "disabled": true }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get My Orders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/orders/my-orders?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "orders", "my-orders"],
+							"query": [
+								{ "key": "page", "value": "1" },
+								{ "key": "limit", "value": "10" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Order by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/orders/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "orders", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "order-uuid-here"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Checkout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"shippingName\": \"John Doe\",\n    \"shippingAddressLine1\": \"123 Main Street\",\n    \"shippingAddressLine2\": \"Apt 4B\",\n    \"shippingCity\": \"New York\",\n    \"shippingState\": \"NY\",\n    \"shippingPostalCode\": \"10001\",\n    \"shippingCountry\": \"USA\",\n    \"shippingPhone\": \"+1-555-123-4567\",\n    \"billingName\": \"John Doe\",\n    \"billingAddressLine1\": \"123 Main Street\",\n    \"billingCity\": \"New York\",\n    \"billingState\": \"NY\",\n    \"billingPostalCode\": \"10001\",\n    \"billingCountry\": \"USA\",\n    \"notes\": \"Please deliver during business hours\",\n    \"couponCode\": \"SUMMER20\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/orders/checkout",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "orders", "checkout"]
+						}
+					}
+				},
+				{
+					"name": "Update Order Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"confirmed\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/orders/:id/status",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "orders", ":id", "status"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "order-uuid-here"
+								}
+							]
+						},
+						"description": "Status options: pending, confirmed, processing, shipped, delivered, cancelled, refunded"
+					}
+				},
+				{
+					"name": "Cancel Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/orders/:id/cancel",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "orders", ":id", "cancel"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "order-uuid-here"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Sales Summary",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/orders/analytics/sales",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "orders", "analytics", "sales"],
+							"query": [
+								{ "key": "startDate", "value": "2026-01-01", "disabled": true },
+								{ "key": "endDate", "value": "2026-12-31", "disabled": true }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Top Products",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/orders/analytics/top-products?limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "orders", "analytics", "top-products"],
+							"query": [
+								{ "key": "limit", "value": "10" }
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Coupons",
+			"item": [
+				{
+					"name": "Get All Coupons",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/coupons?includeInactive=false",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "coupons"],
+							"query": [
+								{ "key": "includeInactive", "value": "false" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Coupon by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/coupons/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "coupons", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "coupon-uuid-here"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Coupon (Percentage)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\": \"SAVE20\",\n    \"description\": \"20% off your order\",\n    \"discountType\": \"percentage\",\n    \"discountValue\": 20,\n    \"minOrderAmount\": 50,\n    \"maxUses\": 100,\n    \"isActive\": true,\n    \"startsAt\": \"2026-01-01T00:00:00Z\",\n    \"expiresAt\": \"2026-12-31T23:59:59Z\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/coupons",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "coupons"]
+						}
+					}
+				},
+				{
+					"name": "Create Coupon (Fixed Amount)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\": \"FLAT50\",\n    \"description\": \"$50 off orders over $200\",\n    \"discountType\": \"fixed_amount\",\n    \"discountValue\": 50,\n    \"minOrderAmount\": 200,\n    \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/coupons",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "coupons"]
+						}
+					}
+				},
+				{
+					"name": "Update Coupon",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"discountValue\": 25,\n    \"maxUses\": 200,\n    \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/coupons/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "coupons", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "coupon-uuid-here"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Coupon",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/coupons/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "coupons", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "coupon-uuid-here"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Validate Coupon",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\": \"SAVE20\",\n    \"orderTotal\": 150.00\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ecommerce/coupons/validate",
+							"host": ["{{baseUrl}}"],
+							"path": ["ecommerce", "coupons", "validate"]
+						}
+					}
+				}
+			]
+		}
+	]
+}
